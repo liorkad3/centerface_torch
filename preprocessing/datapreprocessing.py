@@ -1,13 +1,14 @@
-from transforms import ConvertFromInts, ToTensor, Resize, ToPercentCoords
+from transforms import ConvertFromInts, ToTensor, Resize, ToPercentCoords, Padding
 
 class TrainAugmentation:
     def __init__(self, size):
         self.size = size
         self.augment = Compose([
             ConvertFromInts(),
-            ToPercentCoords(),
+            # ToPercentCoords(),
             Resize(self.size),
-            ToTensor()
+            ToTensor(),
+            Padding(self.size)
         ])
 
     def __call__(self, img, boxes):
@@ -18,9 +19,10 @@ class EvalAugmentation:
         self.size = size
         self.augment = Compose([
             ConvertFromInts(),
-            ToPercentCoords(),
+            # ToPercentCoords(),
             Resize(self.size),
-            ToTensor()
+            ToTensor(),
+            Padding(self.size)
         ])
 
     def __call__(self, img, boxes):
@@ -51,4 +53,5 @@ if __name__ == "__main__":
     img = cv2.imread('test.jpg')
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     boxes = np.array(([120, 150, 500, 400], [0, 38, 250, 600]))
-    img, boxes = trans(img, boxes)
+    img, boxes, size = trans(img, boxes)
+    print()
