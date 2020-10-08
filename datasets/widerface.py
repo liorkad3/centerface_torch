@@ -56,6 +56,7 @@ class WiderDataset(Dataset):
 
         return img, boxes
 
+    # todo change to numpy array?
     def _load_image(self, index):
         image_path = f'{self.images_dir}/{self.fnames[index]}'
         img = Image.open(image_path)
