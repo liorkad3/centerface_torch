@@ -1,5 +1,5 @@
 import torch
-from PIL import Image
+import cv2 as cv2
 from torch.utils.data import Dataset
 import numpy as np
 
@@ -7,15 +7,23 @@ import numpy as np
 class WiderDataset(Dataset):
     """docstring for WIDERDetection"""
 
-    def __init__(self, list_file, images_dir, mode='train', transform=None):
+    def __init__(self, data_dir, mode='train', transform=None):
         super(WiderDataset, self).__init__()
         self.mode = mode
         self.fnames = []
         self.boxes = []
-        self.images_dir = images_dir
         self.transform = transform
 
-        with open(list_file) as f:
+        if mode == 'train':
+            self.images_dir = f'{data_dir}/WIDER_TRAIN/images'
+            self.list_file = f'{data_dir}/wider_face_split/wider_face_train_bbx_gt.txt'
+        elif mode == 'val':
+            self.images_dir = f'{data_dir}/WIDER_VAL/images'
+            self.list_file = f'{data_dir}/wider_face_split/wider_face_val_bbx_gt.txt'
+        else:
+            raise NameError(f'not supported mode: {mode}')
+
+        with open(self.list_file) as f:
             lines = f.readlines()
         num_lines = len(lines)
         idx = 0
@@ -48,35 +56,20 @@ class WiderDataset(Dataset):
 
     def __getitem__(self, index):
         img = self._load_image(index)
-        im_width, im_height = img.size
-        boxes = self.annotransform(
-            np.array(self.boxes[index], dtype='float'), im_width, im_height)
+        boxes = np.array(self.boxes[index], dtype='float')
         if self.transform:
-            img = self.transform(img)
-
+            img, boxes = self.transform(img, boxes)
         return img, boxes
 
-    # todo change to numpy array?
     def _load_image(self, index):
         image_path = f'{self.images_dir}/{self.fnames[index]}'
-        img = Image.open(image_path)
-        if img.mode == 'L':
-            img = img.convert('RGB')
+        img = cv2.imread(image_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         return img
         
-        
-    def annotransform(self, boxes, im_width, im_height):
-        boxes[:, 0] /= im_width
-        boxes[:, 1] /= im_height
-        boxes[:, 2] /= im_width
-        boxes[:, 3] /= im_height
-        return boxes
-
 
 if __name__ == '__main__':
-    # from config import cfg
-    dataset = WiderDataset('data/wider_face_split/wider_face_val_bbx_gt.txt',
-    images_dir='data/WIDER_VAL/images', mode='val')
-    #for i in range(len(dataset)):
+    trans = TrainAugmentation(640)
+    dataset = WiderDataset(data_dir='data', mode='val', transform=trans)
     img, boxes = dataset[3]
-    print()
+    print(img.shape, boxes[0])
