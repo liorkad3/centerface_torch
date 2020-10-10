@@ -47,6 +47,8 @@ class ToPercentCoords:
         boxes[:, 3] /= height
 
         return image, boxes
+    
+
 
 if __name__ == "__main__":
     # p = Padding(640)

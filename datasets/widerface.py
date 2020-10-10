@@ -14,6 +14,7 @@ class WiderDataset(Dataset):
         self.boxes = []
         self.transform = transform
 
+        mode = 'val'
         if mode == 'train':
             self.images_dir = f'{data_dir}/WIDER_TRAIN/images'
             self.list_file = f'{data_dir}/wider_face_split/wider_face_train_bbx_gt.txt'
@@ -58,8 +59,8 @@ class WiderDataset(Dataset):
         img = self._load_image(index)
         boxes = np.array(self.boxes[index], dtype='float')
         if self.transform:
-            img, boxes = self.transform(img, boxes)
-        return img, boxes
+            batch = self.transform(img, boxes)
+        return batch
 
     def _load_image(self, index):
         image_path = f'{self.images_dir}/{self.fnames[index]}'
